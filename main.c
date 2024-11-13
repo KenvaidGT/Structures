@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_STUDENTS 100
 
 /* Structure */
 struct students {
@@ -13,7 +17,7 @@ struct students {
 int findStudentById(struct students ArrOfStudents[], int num, int id) {
     for (int i = 0; i < num; i++) {
         if (ArrOfStudents[i].id == id) {
-            return i; 
+            return i;
         }
     }
     return -1;
@@ -26,7 +30,7 @@ void stringCopy(char *dest, const char *src) {
         dest++;
         src++;
     }
-    *dest = '\0'; /* Null-terminate the string */
+    *dest = '\0';
 }
 
 /* Function similar to strcmp */
@@ -71,66 +75,70 @@ void sortStudents(struct students ArrOfStudents[], int num, int (*compare)(const
     }
 }
 
-int main() {
-    /* Initialize students */
-    struct students ArrOfStudents[100] = {
-        {1, "Timur", "Koshelev", 17, "PX.23"},
-        {2, "Bogdan", "Reks", 16, "PX.23"},
-        {3, "Aleksejs", "Skels", 17, "PX.23"},
-        
-        {4, "Buggati", "Buiznes", 18, "PX.24"},
-        {5, "Mark", "Lohovs", 16, "PX.24"},
-        {6, "Kris", "Vector", 17, "PX.24"},
+/* Load students from file */
+int loadStudentsFromFile(struct students ArrOfStudents[]) {
+    FILE *file = fopen("Students.txt", "r");
+    if (!file) {
+        printf("!!! Error opening file 'Students.txt' for reading. !!!\n");
+        return 0;
+    }
+    int i = 0;
+    while (fscanf(file, "%d %s %s %d %s", &ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, &ArrOfStudents[i].age, ArrOfStudents[i].programm) == 5) {
+        i++;
+    }
+    fclose(file);
+    return i;
+}
 
-        {7, "Doctor", "Who", 20, "PX.22"},
-        {8, "IT", "Boss", 21, "PX.22"},
-        {9, "Yarik", "Lohovs", 20, "PX.22"}
-  
-    };
-    int num = 9; /* Number of students */
-    int nextId = 10; /* Next ID for new students */
+/* Save students to file */
+void saveStudentsToFile(struct students ArrOfStudents[], int num) {
+    FILE *file = fopen("Students.txt", "w");
+    if (!file) {
+        printf("!!! Error opening file 'Students.txt' for writing. !!!\n");
+        return;
+    }
+    for (int i = 0; i < num; i++) {
+        fprintf(file, "%d %s %s %d %s\n", ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, ArrOfStudents[i].age, ArrOfStudents[i].programm);
+    }
+    fclose(file);
+}
+
+int main() {
+    struct students ArrOfStudents[MAX_STUDENTS];
+    int num = loadStudentsFromFile(ArrOfStudents);
+    int nextId = num > 0 ? ArrOfStudents[num - 1].id + 1 : 1;
     char tmpChar[100];
     int tmpInt;
     int found = 0;
-
     int exitProgram = 0;
 
     while (!exitProgram) {
         printf("##############################\n| Select an option:\n|   Add a student - 0\n|   Remove a student - 1\n|   Edit student details - 2\n|   View students - 3\n|   Exit - 4\n|\n| Input: ");
-
         int variant;
         scanf("%d", &variant);
 
-        if (variant == 0) /* Add a student */
-        {
-            if (num < 100) {
+        if (variant == 0) { /* Add a student */
+            if (num < MAX_STUDENTS) {
                 ArrOfStudents[num].id = nextId++;
-
                 printf("##############################\n| Enter name: ");
                 scanf("%s", ArrOfStudents[num].name);
-
                 printf("| Enter surname: ");
                 scanf("%s", ArrOfStudents[num].surname);
-
                 printf("| Enter age: ");
                 scanf("%d", &ArrOfStudents[num].age);
-
                 printf("| Enter program [Example: PX.69]: ");
                 scanf("%s", ArrOfStudents[num].programm);
-
                 printf("##############################\n !!! Student added with ID %d! !!!\n", ArrOfStudents[num].id);
                 num++;
+                saveStudentsToFile(ArrOfStudents, num);
             } else {
                 printf("!!! No more space to add students. !!!\n");
             }
-
-        } else if (variant == 1) /* Remove a student */
-        {
+        } else if (variant == 1) { /* Remove a student */
             if (num > 0) {
                 int deleteId;
                 printf("##############################\n| Enter the ID of the student to remove: ");
                 scanf("%d", &deleteId);
-
                 int deleteIndex = findStudentById(ArrOfStudents, num, deleteId);
                 if (deleteIndex != -1) {
                     for (int i = deleteIndex; i < num - 1; i++) {
@@ -138,115 +146,88 @@ int main() {
                     }
                     num--;
                     printf("##############################\n !!! Student with ID %d removed! !!!\n", deleteId);
+                    saveStudentsToFile(ArrOfStudents, num);
                 } else {
                     printf("##############################\n| !!! Student with ID %d not found! !!!\n", deleteId);
                 }
             } else {
                 printf("##############################\n !!! No students to remove! !!!\n");
             }
-
-        } else if (variant == 2) /* Edit a student */
-        {
+        } else if (variant == 2) { /* Edit a student */
             if (num > 0) {
                 int editId;
                 printf("##############################\n| Enter the ID of the student to edit: ");
                 scanf("%d", &editId);
-
                 int editIndex = findStudentById(ArrOfStudents, num, editId);
                 if (editIndex != -1) {
                     int dataVariant;
                     printf("|\n| What to edit:\n|   Name - 0\n|   Surname - 1\n|   Age - 2\n|   Program - 3\n|\n| Input: ");
                     scanf("%d", &dataVariant);
-
-                    if (dataVariant == 0)
-                    {
+                    if (dataVariant == 0) {
                         printf("##############################\n| Enter new name: ");
                         scanf("%s", tmpChar);
                         stringCopy(ArrOfStudents[editIndex].name, tmpChar);
-
-                    } else if (dataVariant == 1)
-                    {
+                    } else if (dataVariant == 1) {
                         printf("##############################\n| Enter new surname: ");
                         scanf("%s", tmpChar);
                         stringCopy(ArrOfStudents[editIndex].surname, tmpChar);
-
-                    } else if (dataVariant == 2)
-                    {
+                    } else if (dataVariant == 2) {
                         printf("##############################\n| Enter new age: ");
                         scanf("%d", &tmpInt);
                         ArrOfStudents[editIndex].age = tmpInt;
-
-                    } else if (dataVariant == 3)
-                    {
+                    } else if (dataVariant == 3) {
                         printf("##############################\n| Enter new program: ");
                         scanf("%s", tmpChar);
                         stringCopy(ArrOfStudents[editIndex].programm, tmpChar);
                     }
-
                     printf("##############################\n| !!! Student with ID %d successfully edited! !!!\n", editId);
+                    saveStudentsToFile(ArrOfStudents, num);
                 } else {
                     printf("##############################\n| !!! Student with ID %d not found! !!!\n", editId);
                 }
             } else {
                 printf("##############################\n !!! No students to edit! !!!\n");
             }
-
-        } else if (variant == 3) /* View students */
-        {
+        } else if (variant == 3) { /* View students */
             if (num > 0) {
                 int SortMethod;
                 printf("##############################\n| Sorting method:\n|   By name - 0\n|   By surname - 1\n|   By age - 2\n|   By program - 3\n|   By ID - 4\n|   For one program - 5\n| Input: ");
                 scanf("%d", &SortMethod);
 
-                if (SortMethod == 0) /* Sort by name */
-                {
+                if (SortMethod == 0) {
                     sortStudents(ArrOfStudents, num, compareByName);
-
-                } else if (SortMethod == 1) /* Sort by surname */
-                {
+                } else if (SortMethod == 1) {
                     sortStudents(ArrOfStudents, num, compareBySurname);
-
-                } else if (SortMethod == 2) /* Sort by age */
-                {
+                } else if (SortMethod == 2) {
                     sortStudents(ArrOfStudents, num, compareByAge);
-
-                } else if (SortMethod == 3) /* Sort by program */
-                {
+                } else if (SortMethod == 3) {
                     sortStudents(ArrOfStudents, num, compareByProgramm);
-
-                } else if (SortMethod == 4) /* Sort by ID */
-                {
+                } else if (SortMethod == 4) {
                     sortStudents(ArrOfStudents, num, compareById);
-                    
-                } else if (SortMethod == 5) { /* Filter by program */
-                    printf("##############################\n| Enter program for filtering: ");
+                } else if (SortMethod == 5) {
+                    printf("##############################\n| Enter program name to filter [Example: PX.69]: ");
                     scanf("%s", tmpChar);
-
-                    printf("\n##############################\n| Students in the %s program:\n", tmpChar);
-
+                    printf("##############################\n");
                     for (int i = 0; i < num; i++) {
                         if (stringCompare(ArrOfStudents[i].programm, tmpChar) == 0) {
-                            printf("|   ID: %d  | %s %s %d years old %s \n", ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, ArrOfStudents[i].age, ArrOfStudents[i].programm);
-                            found = 1;
+                            printf("| ID: %d    %s %s %d y.o. %s\n", ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, ArrOfStudents[i].age, ArrOfStudents[i].programm);
                         }
                     }
+                    continue;
                 }
 
-                /* Output sorted students */
-                if (found == 0) {
-                    printf("|\n##############################\n|\n| Sorted list:\n");
-                    for (int i = 0; i < num; i++) {
-                        printf("|   ID: %d  | %s %s %d years old %s \n", ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, ArrOfStudents[i].age, ArrOfStudents[i].programm);
-                    }
+                printf("##############################\n");
+                for (int i = 0; i < num; i++) {
+                    printf("| ID: %d    %s %s %d y.o. %s\n", ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, ArrOfStudents[i].age, ArrOfStudents[i].programm);
                 }
-                found = 0;
+            } else {
+                printf("##############################\n !!! No students to view! !!!\n");
             }
-
-        } else if (variant == 4) /* Exit */
-        {
+        } else if (variant == 4) { /* Exit */
+            printf("!!! Exiting program. !!!\n");
             exitProgram = 1;
         } else {
-            printf(" !!! Invalid option! !!! \n");
+            printf("!!! Invalid option. !!!\n");
         }
     }
 

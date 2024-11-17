@@ -189,13 +189,17 @@ int deleteStudent(struct students ArrOfStudents[], int *num) {
     for (int i = index; i < *num - 1; i++) {
         ArrOfStudents[i] = ArrOfStudents[i + 1];
     }
+    
+    for (int i = index; i < *num - 1; i++) {
+        ArrOfStudents[i].id = i + 1;
+    }
+
     (*num)--;
 
     printf("#############################################################\n");
     printf("\033[32m!!! Student with ID \033[36m%d\033[32m deleted successfully. !!!\033[0m\n", id);
     return 1;
 }
-
 void sortStudents(struct students ArrOfStudents[], int num, int (*compare)(const struct students *, const struct students *)) {
     for (int i = 0; i < num - 1; i++) {
         for (int j = 0; j < num - i - 1; j++) {

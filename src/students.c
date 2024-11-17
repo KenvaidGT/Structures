@@ -1,10 +1,11 @@
 #include "students.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-const char *file_path = "data/students.bin"; /* Путь к файлу */
 
-/* Функция для добавления студента */
+const char *file_path = "data/students.bin";
+
 void addStudent(struct students ArrOfStudents[], int *numStudents) {
     struct students newStudent;
 
@@ -24,10 +25,9 @@ void addStudent(struct students ArrOfStudents[], int *numStudents) {
     (*numStudents)++;
 
     printf("#############################################################\n");
-    printf("\033[32m!!! Student with ID %d added successfully. !!!\033[0m\n", newStudent.id);
+    printf("\033[32m!!! Student with ID \033[36m%d\033[32m added successfully. !!!\033[0m\n", newStudent.id);
 }
 
-/* Функция для поиска студента по ID */
 int findStudentById(struct students ArrOfStudents[], int num, int id) {
     for (int i = 0; i < num; i++) {
         if (ArrOfStudents[i].id == id) {
@@ -37,7 +37,6 @@ int findStudentById(struct students ArrOfStudents[], int num, int id) {
     return -1;
 }
 
-/* Загрузка студентов из файла */
 int loadStudentsFromFile(struct students ArrOfStudents[]) {
     FILE *file = fopen(file_path, "rb");
     if (!file) {
@@ -54,8 +53,6 @@ int loadStudentsFromFile(struct students ArrOfStudents[]) {
     return i; 
 }
 
-
-/* Сохранение студентов в файл */
 void saveStudentsToFile(struct students ArrOfStudents[], int num) {
     FILE *file = fopen(file_path, "wb");
     if (!file) {
@@ -71,8 +68,6 @@ void saveStudentsToFile(struct students ArrOfStudents[], int num) {
     printf("Students saved successfully to 'students.bin'.\n");
 }
 
-
-/* Отображение студентов с фиксированными размерами столбцов */
 void displayStudents(const struct students ArrOfStudents[], int num) {
     if (num == 0) {
         printf("#############################################################\n");    
@@ -80,13 +75,12 @@ void displayStudents(const struct students ArrOfStudents[], int num) {
         return;
     }
     
-    // Максимальная длина для каждого столбца
     const int MAX_NAME_LENGTH = 15;
     const int MAX_SURNAME_LENGTH = 15;
     const int MAX_PROGRAM_LENGTH = 10;
 
     printf("#############################################################\n");
-    printf("| %-3s| %-15s | %-15s | %-3s | %-10s |\n", "ID", "Name", "Surname", "Age", "Program");
+    printf("| \033[36m%-3s\033[0m| %-15s | %-15s | %-3s | %-10s |\n", "ID", "Name", "Surname", "Age", "Program");
     printf("------------------------------------------------------------|\n");
     
     for (int i = 0; i < num; i++) {
@@ -96,8 +90,7 @@ void displayStudents(const struct students ArrOfStudents[], int num) {
         snprintf(surname, sizeof(surname), "%-*s", MAX_SURNAME_LENGTH, ArrOfStudents[i].surname);
         snprintf(program, sizeof(program), "%-*s", MAX_PROGRAM_LENGTH, ArrOfStudents[i].programm);
         
-        // Выводим данные с фиксированной шириной столбцов
-        printf("| %-3d| %-15s | %-15s | %-3d | %-10s |\n", 
+        printf("| \033[36m%-3d\033[0m| %-15s | %-15s | %-3d | %-10s |\n", 
                ArrOfStudents[i].id, 
                name, 
                surname, 
@@ -107,48 +100,73 @@ void displayStudents(const struct students ArrOfStudents[], int num) {
     printf("------------------------------------------------------------|\n");
 }
 
+void getInput(char *prompt, char *currentValue, char *buffer, int bufferSize) {
+    printf("%s (current: %s): ", prompt, currentValue);
+    fgets(buffer, bufferSize, stdin);
+
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0';
+    }
+
+    if (strlen(buffer) == 0) {
+        strcpy(buffer, currentValue);
+    }
+}
+
 void updateStudent(struct students ArrOfStudents[], int num) {
     int id;
     printf("#############################################################\n");
-    printf("| Enter the ID of the student to update: ");
+    printf("| Enter the ID of the student to update:\033[36m ");
     scanf("%d", &id);
+    printf("\033[0m");
+    getchar();
 
     int index = findStudentById(ArrOfStudents, num, id);
     if (index == -1) {
         printf("#############################################################\n");
-        printf("\033[31m!!! Student with ID %d not found. !!!\033[0m\n", id);
+        printf("\033[31m!!! Student with ID \033[36m %d \033[31m not found. !!!\033[0m\n", id);
         printf("#############################################################\n");
         return;
     }
 
-    printf("#############################################################\n");
-    printf("| \033[32mUpdating student with ID %d.\033[0m\n", id);
-    printf("| Enter new name (current: %s): ", ArrOfStudents[index].name);
-    scanf("%s", ArrOfStudents[index].name);
+    char inputBuffer[100];
 
-    printf("| Enter new surname (current: %s): ", ArrOfStudents[index].surname);
-    scanf("%s", ArrOfStudents[index].surname);
+    printf("#############################################################\n");
+    printf("| Updating student with ID \033[36m%d\033[0m (\033[4mU can press enter for keep info, without rewrite name, surnam etc...\033[0m).\n", id);
+
+    getInput("| Enter new name", ArrOfStudents[index].name, inputBuffer, sizeof(inputBuffer));
+    strcpy(ArrOfStudents[index].name, inputBuffer);
+
+    getInput("| Enter new surname", ArrOfStudents[index].surname, inputBuffer, sizeof(inputBuffer));
+    strcpy(ArrOfStudents[index].surname, inputBuffer);
 
     printf("| Enter new age (current: %d): ", ArrOfStudents[index].age);
-    scanf("%d", &ArrOfStudents[index].age);
+    fgets(inputBuffer, sizeof(inputBuffer), stdin);
+    if (inputBuffer[0] != '\n') { 
+        int newAge = atoi(inputBuffer);
+        if (newAge > 0) {
+            ArrOfStudents[index].age = newAge;
+        }
+    }
 
-    printf("| Enter new program (current: %s): ", ArrOfStudents[index].programm);
-    scanf("%s", ArrOfStudents[index].programm);
+    getInput("| Enter new program", ArrOfStudents[index].programm, inputBuffer, sizeof(inputBuffer));
+    strcpy(ArrOfStudents[index].programm, inputBuffer);
 
     printf("#############################################################\n");
     printf("\033[32m!!! Student updated successfully. !!!\033[0m\n");
 }
-
 int deleteStudent(struct students ArrOfStudents[], int *num) {
     int id;
     printf("#############################################################\n");
-    printf("| Enter the ID of the student to delete: ");
+    printf("| Enter the ID of the student to delete: \033[36m ");
     scanf("%d", &id);
+    printf("\033[0m");
 
     int index = findStudentById(ArrOfStudents, *num, id);
     if (index == -1) {
         printf("#############################################################\n");
-        printf("\033[31m!!! Student with ID %d not found. !!!\n\033[0m", id);
+        printf("\033[31m!!! Student with ID \033[36m %d \033[31m not found. !!!\n\033[0m", id);
         return 0;
     }
 
@@ -158,11 +176,10 @@ int deleteStudent(struct students ArrOfStudents[], int *num) {
     (*num)--;
 
     printf("#############################################################\n");
-    printf("\033[32m!!! Student with ID %d deleted successfully. !!!\033[0m\n", id);
+    printf("\033[32m!!! Student with ID \033[36m%d\033[32m deleted successfully. !!!\033[0m\n", id);
     return 1;
 }
 
-/* Функция сортировки студентов */
 void sortStudents(struct students ArrOfStudents[], int num, int (*compare)(const struct students *, const struct students *)) {
     for (int i = 0; i < num - 1; i++) {
         for (int j = 0; j < num - i - 1; j++) {

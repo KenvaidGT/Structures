@@ -5,7 +5,7 @@ struct students {
     int id;
     char name[50];
     char surname[50];
-    int age;
+    char birthDate[11]; // Формат: "YYYY-MM-DD"
     char programm[50];
 };
 
@@ -19,10 +19,10 @@ int deleteStudent(struct students ArrOfStudents[], int *num);
 void sortStudents(struct students ArrOfStudents[], int num, int (*compare)(const struct students *, const struct students *));
 int compareByName(const struct students *a, const struct students *b);
 int compareBySurname(const struct students *a, const struct students *b);
-int compareByAge(const struct students *a, const struct students *b);
+int compareByAge(const struct students *a, const struct students *b); // Вернул эту функцию
 int compareByProgramm(const struct students *a, const struct students *b);
 int compareById(const struct students *a, const struct students *b);
 void filterAndDisplayStudentsByProgram(const struct students ArrOfStudents[], int num, const char *program);
-
+int calculateAge(const char *birthDate); // Новая вспомогательная функция
 
 #endif

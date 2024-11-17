@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-const char *file_path = "data/students.txt"; /* Путь к файлу */
+const char *file_path = "data/students.bin"; /* Путь к файлу */
 
 /* Функция для добавления студента */
 void addStudent(struct students ArrOfStudents[], int *numStudents) {
@@ -39,36 +39,43 @@ int findStudentById(struct students ArrOfStudents[], int num, int id) {
 
 /* Загрузка студентов из файла */
 int loadStudentsFromFile(struct students ArrOfStudents[]) {
-    FILE *file = fopen(file_path, "r");
+    FILE *file = fopen("students.bin", "rb");
     if (!file) {
-        printf("\033[31m!!! Error opening file 'Students.txt' for reading. !!!\033[0m\n");
+        printf("!!! Error opening file 'students.bin' for reading. !!!\n");
         return 0;
     }
+
     int i = 0;
-    while (fscanf(file, "%d %s %s %d %s", &ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, &ArrOfStudents[i].age, ArrOfStudents[i].programm) == 5) {
+    while (fread(&ArrOfStudents[i], sizeof(struct students), 1, file)) {
         i++;
     }
+
     fclose(file);
-    return i;
+    return i; 
 }
+
 
 /* Сохранение студентов в файл */
 void saveStudentsToFile(struct students ArrOfStudents[], int num) {
-    FILE *file = fopen(file_path, "w");
+    FILE *file = fopen("students.bin", "wb");
     if (!file) {
-        printf("\033[31m!!! Error opening file 'Students.txt' for writing. !!!\033[0m\n");
+        printf("!!! Error opening file 'students.bin' for writing. !!!\n");
         return;
     }
+
     for (int i = 0; i < num; i++) {
-        fprintf(file, "%d %s %s %d %s\n", ArrOfStudents[i].id, ArrOfStudents[i].name, ArrOfStudents[i].surname, ArrOfStudents[i].age, ArrOfStudents[i].programm);
+        fwrite(&ArrOfStudents[i], sizeof(struct students), 1, file);
     }
+
     fclose(file);
+    printf("Students saved successfully to 'students.bin'.\n");
 }
+
 
 /* Отображение студентов с фиксированными размерами столбцов */
 void displayStudents(const struct students ArrOfStudents[], int num) {
     if (num == 0) {
-        printf("\033[31m!!! No students to display. !!!\n");
+        printf("\033[31m!!! No students to display. !!!\033[0m\n");
         return;
     }
     

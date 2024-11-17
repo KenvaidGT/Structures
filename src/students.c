@@ -39,7 +39,7 @@ int findStudentById(struct students ArrOfStudents[], int num, int id) {
 
 /* Загрузка студентов из файла */
 int loadStudentsFromFile(struct students ArrOfStudents[]) {
-    FILE *file = fopen("students.bin", "rb");
+    FILE *file = fopen(file_path, "rb");
     if (!file) {
         printf("!!! Error opening file 'students.bin' for reading. !!!\n");
         return 0;
@@ -57,7 +57,7 @@ int loadStudentsFromFile(struct students ArrOfStudents[]) {
 
 /* Сохранение студентов в файл */
 void saveStudentsToFile(struct students ArrOfStudents[], int num) {
-    FILE *file = fopen("students.bin", "wb");
+    FILE *file = fopen(file_path, "wb");
     if (!file) {
         printf("!!! Error opening file 'students.bin' for writing. !!!\n");
         return;
@@ -75,6 +75,7 @@ void saveStudentsToFile(struct students ArrOfStudents[], int num) {
 /* Отображение студентов с фиксированными размерами столбцов */
 void displayStudents(const struct students ArrOfStudents[], int num) {
     if (num == 0) {
+        printf("#############################################################\n");    
         printf("\033[31m!!! No students to display. !!!\033[0m\n");
         return;
     }

@@ -97,7 +97,7 @@ int main() {
                 break;
             case 4:
                 saveStudentsToFile(ArrOfStudents, numStudents);
-                printf("Data saved. Exiting...\n");
+                printf("\033[32mData saved. Exiting...\033[0m\n");
                 return 0;
             default:
                 printf("Invalid option. Please try again.\n");

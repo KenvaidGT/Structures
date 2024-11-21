@@ -222,19 +222,16 @@ int compareBySurname(const struct students *a, const struct students *b) {
 
 #include <time.h>
 
-// Сравнивает даты рождения (yyyy-mm-dd).
 int compareByAge(const struct students *a, const struct students *b) {
     struct tm dateA = {0}, dateB = {0};
     sscanf(a->birthDate, "%d-%d-%d", &dateA.tm_year, &dateA.tm_mon, &dateA.tm_mday);
     sscanf(b->birthDate, "%d-%d-%d", &dateB.tm_year, &dateB.tm_mon, &dateB.tm_mday);
 
-    // tm_year считается от 1900, tm_mon начинается с 0
     dateA.tm_year -= 1900;
     dateB.tm_year -= 1900;
     dateA.tm_mon -= 1;
     dateB.tm_mon -= 1;
 
-    // Сравниваем даты рождения (меньшая означает старшего человека).
     return mktime(&dateA) - mktime(&dateB);
 }
 

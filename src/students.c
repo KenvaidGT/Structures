@@ -258,12 +258,10 @@ void filterAndDisplayStudentsByProgram(const struct students ArrOfStudents[], in
             struct tm birthDate = {0};
             int age = 0;
 
-            // Разбираем дату рождения
             sscanf(ArrOfStudents[i].birthDate, "%d-%d-%d", &birthDate.tm_year, &birthDate.tm_mon, &birthDate.tm_mday);
             birthDate.tm_year -= 1900;
             birthDate.tm_mon -= 1;
 
-            // Расчёт возраста
             age = currentDate->tm_year - birthDate.tm_year;
             if (currentDate->tm_mon < birthDate.tm_mon || 
                 (currentDate->tm_mon == birthDate.tm_mon && currentDate->tm_mday < birthDate.tm_mday)) {

@@ -103,7 +103,7 @@ void displayStudents(const struct students ArrOfStudents[], int num) {
 
     printf("#############################################################\n");
     printf("| \033[36m%-3s\033[0m| %-15s | %-15s | %-3s | %-10s |\n", "ID", "Name", "Surname", "Age", "Program");
-    printf("------------------------------------------------------------|\n");
+    printf("|----|-----------------|-----------------|-----|------------|\n");
 
     for (int i = 0; i < num; i++) {
         char name[MAX_NAME_LENGTH + 1], surname[MAX_SURNAME_LENGTH + 1], program[MAX_PROGRAM_LENGTH + 1];
@@ -119,7 +119,7 @@ void displayStudents(const struct students ArrOfStudents[], int num) {
                calculateAge(ArrOfStudents[i].birthDate), 
                program);
     }
-    printf("------------------------------------------------------------|\n");
+    /* printf("|----|-----------------|-----------------|-----|------------|\n"); */
 }
 
 void getInput(char *prompt, char *currentValue, char *buffer, int bufferSize) {
@@ -251,7 +251,7 @@ void filterAndDisplayStudentsByProgram(const struct students ArrOfStudents[], in
 
     printf("#############################################################\n");
     printf("| ID | Name       | Surname    | Age | Program |\n");
-    printf("------------------------------------------------------------|\n");
+    printf("|----|-----------------|-----------------|-----|------------|\n");
 
     for (int i = 0; i < num; i++) {
         if (strcmp(ArrOfStudents[i].programm, program) == 0) {
@@ -277,7 +277,7 @@ void filterAndDisplayStudentsByProgram(const struct students ArrOfStudents[], in
             found = 1;
         }
     }
-    printf("------------------------------------------------------------|\n");
+    printf("|----|-----------------|-----------------|-----|------------|\n");
 
     if (!found) {
         printf("#############################################################\n");

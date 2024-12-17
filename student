@@ -1,0 +1,4 @@
+#!/bin/bash
+# student.sh
+
+make run "$@"

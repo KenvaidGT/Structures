@@ -6,10 +6,12 @@
 
 const char *file_path = "data/students.bin";
 
+/* Compare function for sorting by birthdate */
 int compareByBirthDate(const struct students *a, const struct students *b) {
     return strcmp(a->birthDate, b->birthDate);
 }
 
+/* Calculate a student's age from their birthdate */
 int calculateAge(const char *birthDate) {
     int year, month, day;
     sscanf(birthDate, "%d-%d-%d", &year, &month, &day);
@@ -18,7 +20,6 @@ int calculateAge(const char *birthDate) {
     struct tm *local = localtime(&now);
 
     int age = local->tm_year + 1900 - year;
-
     if ((local->tm_mon + 1 < month) || 
         (local->tm_mon + 1 == month && local->tm_mday < day)) {
         age--;
@@ -27,29 +28,7 @@ int calculateAge(const char *birthDate) {
     return age;
 }
 
-void addStudent(struct students ArrOfStudents[], int *numStudents) {
-    struct students newStudent;
-
-    printf("#############################################################\n");
-    printf("| Enter name: ");
-    scanf("%s", newStudent.name);
-    printf("| Enter surname: ");
-    scanf("%s", newStudent.surname);
-    printf("| Enter birth date (YYYY-MM-DD): ");
-    scanf("%s", newStudent.birthDate);
-    printf("| Enter program: ");
-    scanf("%s", newStudent.programm);
-
-    newStudent.id = *numStudents + 1;
-
-    ArrOfStudents[*numStudents] = newStudent;
-    (*numStudents)++;
-
-    printf("#############################################################\n");
-    printf("\033[32m!!! Student with ID \033[36m%d\033[32m added successfully. !!!\033[0m\n", newStudent.id);
-}
-
-
+/* Find a student by their ID */
 int findStudentById(struct students ArrOfStudents[], int num, int id) {
     for (int i = 0; i < num; i++) {
         if (ArrOfStudents[i].id == id) {
@@ -59,147 +38,78 @@ int findStudentById(struct students ArrOfStudents[], int num, int id) {
     return -1;
 }
 
+/* Load students from file */
 int loadStudentsFromFile(struct students ArrOfStudents[]) {
     FILE *file = fopen(file_path, "rb");
     if (!file) {
-        printf("!!! Error opening file 'students.bin' for reading. !!!\n");
+        printf("\033[31mError: Could not open file '%s' for reading.\033[0m\n", file_path);
         return 0;
     }
 
-    int i = 0;
-    while (fread(&ArrOfStudents[i], sizeof(struct students), 1, file)) {
-        i++;
+    int count = 0;
+    while (fread(&ArrOfStudents[count], sizeof(struct students), 1, file)) {
+        count++;
     }
 
     fclose(file);
-    return i; 
+    return count; 
 }
 
+/* Save students to file */
 void saveStudentsToFile(struct students ArrOfStudents[], int num) {
     FILE *file = fopen(file_path, "wb");
     if (!file) {
-        printf("!!! Error opening file 'students.bin' for writing. !!!\n");
+        printf("\033[31mError: Could not open file '%s' for writing.\033[0m\n", file_path);
         return;
     }
 
-    for (int i = 0; i < num; i++) {
-        fwrite(&ArrOfStudents[i], sizeof(struct students), 1, file);
-    }
-
+    fwrite(ArrOfStudents, sizeof(struct students), num, file);
     fclose(file);
-    printf("Students saved successfully to 'students.bin'.\n");
 }
 
+/* Display all students */
 void displayStudents(const struct students ArrOfStudents[], int num) {
     if (num == 0) {
-        printf("#############################################################\n");    
-        printf("\033[31m!!! No students to display. !!!\033[0m\n");
+        printf("\033[31mNo students to display.\033[0m\n");
         return;
     }
 
-    const int MAX_NAME_LENGTH = 15;
-    const int MAX_SURNAME_LENGTH = 15;
-    const int MAX_PROGRAM_LENGTH = 10;
-
-    printf("#############################################################\n");
-    printf("| \033[36m%-3s\033[0m| %-15s | %-15s | %-3s | %-10s |\n", "ID", "Name", "Surname", "Age", "Program");
-    printf("|----|-----------------|-----------------|-----|------------|\n");
-
+    printf("--------------------------------------------------------\n");
+    printf("| \033[36mID\033[0m | Name        | Surname     | Age | Program       |\n");
+    printf("--------------------------------------------------------\n");
     for (int i = 0; i < num; i++) {
-        char name[MAX_NAME_LENGTH + 1], surname[MAX_SURNAME_LENGTH + 1], program[MAX_PROGRAM_LENGTH + 1];
-
-        snprintf(name, sizeof(name), "%-*s", MAX_NAME_LENGTH, ArrOfStudents[i].name);
-        snprintf(surname, sizeof(surname), "%-*s", MAX_SURNAME_LENGTH, ArrOfStudents[i].surname);
-        snprintf(program, sizeof(program), "%-*s", MAX_PROGRAM_LENGTH, ArrOfStudents[i].programm);
-
-        printf("| \033[36m%-3d\033[0m| %-15s | %-15s | %-3d | %-10s |\n", 
+        printf("| \033[36m%-2d\033[0m | %-11s | %-11s | %-3d | %-13s |\n",
                ArrOfStudents[i].id, 
-               name, 
-               surname, 
+               ArrOfStudents[i].name, 
+               ArrOfStudents[i].surname, 
                calculateAge(ArrOfStudents[i].birthDate), 
-               program);
+               ArrOfStudents[i].programm);
     }
-    /* printf("|----|-----------------|-----------------|-----|------------|\n"); */
+    printf("--------------------------------------------------------\n");
 }
 
-void getInput(char *prompt, char *currentValue, char *buffer, int bufferSize) {
-    printf("%s (current: %s): ", prompt, currentValue);
-    fgets(buffer, bufferSize, stdin);
-
-    size_t len = strlen(buffer);
-    if (len > 0 && buffer[len - 1] == '\n') {
-        buffer[len - 1] = '\0';
-    }
-
-    if (strlen(buffer) == 0) {
-        strcpy(buffer, currentValue);
-    }
-}
-
-void updateStudent(struct students ArrOfStudents[], int num) {
-    int id;
-    printf("#############################################################\n");
-    printf("| Enter the ID of the student to update:\033[36m ");
-    scanf("%d", &id);
-    printf("\033[0m");
-    getchar();
-
-    int index = findStudentById(ArrOfStudents, num, id);
+/* Delete a student by ID */
+int deleteStudent(struct students ArrOfStudents[], int *numStudents, int id) {
+    int index = findStudentById(ArrOfStudents, *numStudents, id);
     if (index == -1) {
-        printf("#############################################################\n");
-        printf("\033[31m!!! Student with ID \033[36m %d \033[31m not found. !!!\033[0m\n", id);
-        return;
-    }
-
-    char inputBuffer[100];
-
-    printf("#############################################################\n");
-    printf("| Updating student with ID \033[36m%d\033[0m (\033[4mU can press enter for keep info, without rewrite name, surnam etc...\033[0m).\n", id);
-
-    getInput("| Enter new name", ArrOfStudents[index].name, inputBuffer, sizeof(inputBuffer));
-    strcpy(ArrOfStudents[index].name, inputBuffer);
-
-    getInput("| Enter new surname", ArrOfStudents[index].surname, inputBuffer, sizeof(inputBuffer));
-    strcpy(ArrOfStudents[index].surname, inputBuffer);
-
-    getInput("| Enter new birth date (YYYY-MM-DD)", ArrOfStudents[index].birthDate, inputBuffer, sizeof(inputBuffer));
-    strcpy(ArrOfStudents[index].birthDate, inputBuffer);
-
-    getInput("| Enter new program", ArrOfStudents[index].programm, inputBuffer, sizeof(inputBuffer));
-    strcpy(ArrOfStudents[index].programm, inputBuffer);
-
-    printf("#############################################################\n");
-    printf("\033[32m!!! Student updated successfully. !!!\033[0m\n");
-}
-
-int deleteStudent(struct students ArrOfStudents[], int *num) {
-    int id;
-    printf("#############################################################\n");
-    printf("| Enter the ID of the student to delete: \033[36m ");
-    scanf("%d", &id);
-    printf("\033[0m");
-
-    int index = findStudentById(ArrOfStudents, *num, id);
-    if (index == -1) {
-        printf("#############################################################\n");
-        printf("\033[31m!!! Student with ID \033[36m %d \033[31m not found. !!!\n\033[0m", id);
+        printf("\033[31mError: Student with ID %d not found.\033[0m\n", id);
         return 0;
     }
 
-    for (int i = index; i < *num - 1; i++) {
+    for (int i = index; i < *numStudents - 1; i++) {
         ArrOfStudents[i] = ArrOfStudents[i + 1];
     }
-    
-    for (int i = index; i < *num - 1; i++) {
+    (*numStudents)--;
+
+    /* Update IDs to be sequential */
+    for (int i = 0; i < *numStudents; i++) {
         ArrOfStudents[i].id = i + 1;
     }
 
-    (*num)--;
-
-    printf("#############################################################\n");
-    printf("\033[32m!!! Student with ID \033[36m%d\033[32m deleted successfully. !!!\033[0m\n", id);
     return 1;
 }
+
+/* Sorting students using a comparator */
 void sortStudents(struct students ArrOfStudents[], int num, int (*compare)(const struct students *, const struct students *)) {
     for (int i = 0; i < num - 1; i++) {
         for (int j = 0; j < num - i - 1; j++) {
@@ -212,76 +122,53 @@ void sortStudents(struct students ArrOfStudents[], int num, int (*compare)(const
     }
 }
 
+/* Comparator for sorting by name */
 int compareByName(const struct students *a, const struct students *b) {
     return strcmp(a->name, b->name);
 }
 
+/* Comparator for sorting by surname */
 int compareBySurname(const struct students *a, const struct students *b) {
     return strcmp(a->surname, b->surname);
 }
 
-#include <time.h>
-
+/* Comparator for sorting by age */
 int compareByAge(const struct students *a, const struct students *b) {
-    struct tm dateA = {0}, dateB = {0};
-    sscanf(a->birthDate, "%d-%d-%d", &dateA.tm_year, &dateA.tm_mon, &dateA.tm_mday);
-    sscanf(b->birthDate, "%d-%d-%d", &dateB.tm_year, &dateB.tm_mon, &dateB.tm_mday);
-
-    dateA.tm_year -= 1900;
-    dateB.tm_year -= 1900;
-    dateA.tm_mon -= 1;
-    dateB.tm_mon -= 1;
-
-    return mktime(&dateA) - mktime(&dateB);
+    return compareByBirthDate(a, b);
 }
 
-
+/* Comparator for sorting by program */
 int compareByProgramm(const struct students *a, const struct students *b) {
     return strcmp(a->programm, b->programm);
 }
 
+/* Comparator for sorting by ID */
 int compareById(const struct students *a, const struct students *b) {
     return a->id - b->id;
 }
 
+/* Filter and display students by program */
 void filterAndDisplayStudentsByProgram(const struct students ArrOfStudents[], int num, const char *program) {
     int found = 0;
-    time_t now = time(NULL);
-    struct tm *currentDate = localtime(&now);
 
-    printf("#############################################################\n");
-    printf("| ID | Name       | Surname    | Age | Program |\n");
-    printf("|----|-----------------|-----------------|-----|------------|\n");
+    printf("--------------------------------------------------------\n");
+    printf("| \033[36mID\033[0m | Name        | Surname     | Age | Program       |\n");
+    printf("--------------------------------------------------------\n");
 
     for (int i = 0; i < num; i++) {
         if (strcmp(ArrOfStudents[i].programm, program) == 0) {
-            struct tm birthDate = {0};
-            int age = 0;
-
-            sscanf(ArrOfStudents[i].birthDate, "%d-%d-%d", &birthDate.tm_year, &birthDate.tm_mon, &birthDate.tm_mday);
-            birthDate.tm_year -= 1900;
-            birthDate.tm_mon -= 1;
-
-            age = currentDate->tm_year - birthDate.tm_year;
-            if (currentDate->tm_mon < birthDate.tm_mon || 
-                (currentDate->tm_mon == birthDate.tm_mon && currentDate->tm_mday < birthDate.tm_mday)) {
-                age--;
-            }
-
-            printf("| %-3d| %-10s | %-10s | %-3d | %-10s |\n", 
-                ArrOfStudents[i].id, 
-                ArrOfStudents[i].name, 
-                ArrOfStudents[i].surname, 
-                age, 
-                ArrOfStudents[i].programm);
+            printf("| \033[36m%-2d\033[0m | %-11s | %-11s | %-3d | %-13s |\n",
+                   ArrOfStudents[i].id, 
+                   ArrOfStudents[i].name, 
+                   ArrOfStudents[i].surname, 
+                   calculateAge(ArrOfStudents[i].birthDate), 
+                   ArrOfStudents[i].programm);
             found = 1;
         }
     }
-    printf("|----|-----------------|-----------------|-----|------------|\n");
 
+    printf("--------------------------------------------------------\n");
     if (!found) {
-        printf("#############################################################\n");
-        printf("\033[31m!!! No students found in the program: %s !!!\033[0m\n", program);
+        printf("\033[31mNo students found in program: %s\033[0m\n", program);
     }
 }
-

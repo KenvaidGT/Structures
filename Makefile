@@ -2,7 +2,6 @@ CC = gcc
 
 CFLAGS = -Iinclude -Wall -Wextra -pedantic
 
-# Папки
 SRCDIR = src
 INCDIR = include
 BUILDDIR = build
@@ -11,7 +10,7 @@ DATADIR = data
 SOURCES = $(wildcard $(SRCDIR)/*.c)
 OBJECTS = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SOURCES))
 
-TARGET = $(BUILDDIR)/students_app
+TARGET = $(BUILDDIR)/px
 
 all: $(TARGET)
 
@@ -23,8 +22,11 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+run: $(TARGET)
+	@./$(TARGET) $(filter-out $@,$(MAKECMDGOALS))
+
 clean:
 	rm -rf $(BUILDDIR)
 
-run: $(TARGET)
-	$(TARGET)
+%:
+	@:

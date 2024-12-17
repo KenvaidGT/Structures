@@ -15,7 +15,7 @@ int loadStudentsFromFile(struct students ArrOfStudents[]);
 void saveStudentsToFile(struct students ArrOfStudents[], int num);
 void displayStudents(const struct students ArrOfStudents[], int num);
 void updateStudent(struct students ArrOfStudents[], int num);
-int deleteStudent(struct students ArrOfStudents[], int *num);
+int deleteStudent(struct students ArrOfStudents[], int *num, int id);
 void sortStudents(struct students ArrOfStudents[], int num, int (*compare)(const struct students *, const struct students *));
 int compareByName(const struct students *a, const struct students *b);
 int compareBySurname(const struct students *a, const struct students *b);
